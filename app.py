@@ -5,85 +5,60 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 import io
 
-# Page Branding & UI
-st.set_page_config(page_title="Word to PDF Converter", page_icon="📄", layout="centered")
+# Page Config
+st.set_page_config(page_title="Word to PDF | One Pilot Tools", page_icon="📄")
 
-# Attractive White UI Styling
+# UI Styling
 st.markdown("""
     <style>
-    .main { background-color: #ffffff; }
     .stButton>button { 
-        width: 100%; 
-        border-radius: 12px; 
-        height: 3.5em; 
-        background-color: #FF4B4B; 
-        color: white; 
-        font-weight: bold;
-        border: none;
-        font-size: 18px;
-    }
-    .stButton>button:hover {
-        background-color: #ff3333;
-        box-shadow: 0px 4px 15px rgba(255, 75, 75, 0.3);
-    }
-    .upload-text {
-        font-size: 24px;
-        font-weight: bold;
-        color: #1E1E1E;
-        text-align: center;
+        width: 100%; border-radius: 12px; height: 3.5em; 
+        background: linear-gradient(45deg, #FF4B2B, #FF416C);
+        color: white; font-weight: bold; border: none;
     }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("📄 WORD to PDF Converter")
-st.write("Bahi, apni `.docx` file upload karen aur foran PDF download karen.")
+st.write("Bahi, ab file download bhi hogi aur sahi khulegi bhi!")
 
-# 1. File Upload Section
-uploaded_file = st.file_uploader("Choose a Word File", type=["docx"])
+uploaded_file = st.file_uploader("Upload .docx file", type=["docx"])
 
-if uploaded_file is not None:
-    st.success(f"✅ File Loaded: {uploaded_file.name}")
-    
-    # Big Attractive Button
+if uploaded_file:
     if st.button("⬇️ CONVERT & DOWNLOAD PDF"):
         try:
-            with st.spinner("Bahi wait karen, PDF tayyar ho rahi hai..."):
-                
-                # Load Word Document from memory
+            with st.spinner("PDF ban rahi hai..."):
                 doc = Document(uploaded_file)
-                
-                # Create a BytesIO buffer for PDF
                 pdf_buffer = io.BytesIO()
-                pdf_doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
                 
-                story = []
+                # Styles setup
                 styles = getSampleStyleSheet()
+                style_n = styles['Normal']
                 
-                # Process Paragraphs
-                for paragraph in doc.paragraphs:
-                    if paragraph.text.strip():
-                        # Word ka text PDF ke paragraph mein convert karna
-                        p = Paragraph(paragraph.text, styles['Normal'])
+                # PDF building
+                pdf_doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+                story = []
+                
+                for para in doc.paragraphs:
+                    if para.text.strip():
+                        p = Paragraph(para.text, style_n)
                         story.append(p)
                         story.append(Spacer(1, 12))
                 
-                # Build PDF
                 pdf_doc.build(story)
-                pdf_output = pdf_buffer.getvalue()
                 
-                # Final Success & Download Button
+                # CRITICAL STEP: Rewind the buffer
+                pdf_buffer.seek(0) 
+                
                 st.balloons()
                 st.download_button(
-                    label="📂 CLICK HERE TO SAVE PDF",
-                    data=pdf_output,
+                    label="📂 SAVE PDF NOW",
+                    data=pdf_buffer,
                     file_name=uploaded_file.name.replace(".docx", ".pdf"),
                     mime="application/pdf"
                 )
-                
         except Exception as e:
-            st.error(f"❌ Error: {str(e)}")
-else:
-    st.info("Awaiting Word File... Browse button par click karen.")
+            st.error(f"Error: {e}")
 
 st.divider()
-st.caption("One Pilot Tools - Professional & Simple Utilities")
+st.caption("One Pilot Tools - Multan")
