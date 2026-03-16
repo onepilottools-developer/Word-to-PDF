@@ -3,62 +3,57 @@ from docx import Document
 from fpdf import FPDF
 import io
 
-# Branding
+# Page Configuration
 st.set_page_config(page_title="Word to PDF | One Pilot Tools", page_icon="📄")
 
-# UI Style (Aapka favorite minimalist theme)
+# White UI Styling
 st.markdown("""
     <style>
+    .main { background-color: #ffffff; }
     .stButton>button { 
         width: 100%; border-radius: 12px; height: 3.5em; 
-        background: linear-gradient(45deg, #ee0979, #ff6a00);
-        color: white; font-weight: bold; border: none;
+        background-color: #FF4B4B; color: white; font-weight: bold; border: none;
     }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("📄 Professional Word to PDF")
-st.write("Bahi, ab binary data aur blank page dono ka masla hal ho gaya hai.")
+st.title("📄 WORD to PDF Converter")
+st.write("Bahi, ye version bilkul sahi chalay ga. Insha'Allah!")
 
 uploaded_file = st.file_uploader("Upload .docx file", type=["docx"])
 
 if uploaded_file:
-    # File name handle karna (Urdu names handle karne ke liye)
-    safe_filename = "converted_document.pdf"
-    
-    if st.button("🚀 CONVERT TO PDF"):
+    if st.button("🚀 CONVERT & DOWNLOAD PDF"):
         try:
             with st.spinner("Processing..."):
-                # Word file load karen
+                # Word file read karen
                 doc = Document(uploaded_file)
                 
-                # FPDF Setup
+                # FPDF2 setup
                 pdf = FPDF()
                 pdf.add_page()
-                pdf.set_font("Arial", size=12)
+                pdf.set_font("helvetica", size=12)
                 
-                # Content extract aur add karen
+                # Content convert karen
                 for para in doc.paragraphs:
                     if para.text.strip():
-                        # Latin-1 safe conversion
-                        text = para.text.encode('latin-1', 'ignore').decode('latin-1')
+                        # Unicode handling
+                        text = para.text.encode('utf-8', 'replace').decode('utf-8')
                         pdf.multi_cell(0, 10, txt=text)
                         pdf.ln(2)
                 
-                # Binary Stream handle karna
-                pdf_str = pdf.output(dest='S')
-                # Convert string output to actual bytes
-                pdf_bytes = pdf_str.encode('latin-1')
+                # Fix: Output as bytes directly
+                pdf_bytes = pdf.output() 
                 
                 st.balloons()
                 st.download_button(
-                    label="📥 DOWNLOAD NOW",
-                    data=pdf_bytes,
-                    file_name=safe_filename,
+                    label="📥 DOWNLOAD PDF NOW",
+                    data=bytes(pdf_bytes), # Force conversion to bytes
+                    file_name="OnePilot_Converted.pdf",
                     mime="application/pdf"
                 )
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
 st.divider()
-st.caption("Powered by One Pilot Tools - Multan, Pakistan")
+st.caption("One Pilot Tools - Multan, Pakistan")
